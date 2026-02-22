@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iPod Nano 7 Theme Previewer</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body data-theme="light">
+  <header class="topbar">
+    <div class="title-wrap">
+      <h1>iPod Nano 7 Theme Previewer</h1>
+      <p>Original n7g preview stack, upgraded with split compare and diagnostics.</p>
+    </div>
+    <div class="topbar-actions">
+      <button id="toggleSidebarBtn" class="action-btn" aria-label="Toggle sidebar">Sidebar</button>
+      <button id="openSettingsBtn" class="action-btn mac-settings-btn" aria-label="Open settings">⚙︎ Settings</button>
+      <label class="file-btn">
+        <input id="primaryFileInput" type="file" accept=".ipsw">
+        Load Theme IPSW
+      </label>
+      <label class="file-btn secondary">
+        <input id="compareFileInput" type="file" accept=".ipsw">
+        Load Compare IPSW
+      </label>
+      <button id="loadRemoteBtn" class="action-btn">Load Remote Firmware</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section id="settingsDock" class="dock">
+      <div class="panel">
+        <h2>Firmware Source</h2>
+        <select id="firmwareSelect"></select>
+        <p id="firmwareHint" class="muted">Select and click "Load Remote Firmware".</p>
+      </div>
+
+      <div class="panel">
+        <h2>iPod Colors</h2>
+        <div id="colorChips" class="chip-grid"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Wallpapers</h2>
+        <div id="styleButtons" class="style-grid"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Jacked Controls</h2>
+        <div class="panel-header-row">
+          <span class="muted">Rotation</span>
+          <div class="rotate-group">
+            <button id="rotateLeftBtn" class="mini-btn" aria-label="Rotate left">⟲ 90°</button>
+            <button id="rotateRightBtn" class="mini-btn" aria-label="Rotate right">90° ⟳</button>
+          </div>
+        </div>
+        <label class="toggle-row">
+          <input id="compareToggle" type="checkbox">
+          <span>Compare Mode</span>
+        </label>
+        <label class="range-row">
+          <span>Split</span>
+          <input id="splitRange" type="range" min="5" max="95" value="50">
+        </label>
+        <label class="toggle-row">
+          <input id="showLabelsToggle" type="checkbox" checked>
+          <span>Show Labels</span>
+        </label>
+        <div class="kbd-list">
+          <span><kbd>←</kbd>/<kbd>→</kbd> pages</span>
+          <span><kbd>C</kbd> compare</span>
+          <span><kbd>Esc</kbd> close app</span>
+        </div>
+      </div>
+
+      <div class="panel diagnostics-launch">
+        <div class="panel-header-row">
+          <h2>Asset Diagnostics</h2>
+          <button id="openDiagnosticsBtn" class="mini-btn">Open</button>
+        </div>
+        <p class="muted">Open a draggable diagnostics window to inspect missing IDs.</p>
+      </div>
+    </section>
+
+    <section class="preview-stage">
+      <div class="device-shell" id="deviceShell">
+        <div id="deviceArtHost" class="device-art-host" aria-hidden="true"></div>
+
+        <div class="screen">
+          <div id="wallpaperBase" class="wallpaper-layer"></div>
+          <div id="wallpaperCompare" class="wallpaper-layer compare"></div>
+          <div id="splitHandle" class="split-handle"></div>
+
+          <div class="statusbar">
+            <span id="statusTime">12:00</span>
+          </div>
+
+          <div id="appsGrid" class="apps-grid"></div>
+          <div id="appsGridCompare" class="apps-grid compare-ui-layer"></div>
+          <div class="theme-names">
+            <span id="themeNamePrimary" class="theme-name primary"></span>
+            <span id="themeNameCompare" class="theme-name compare"></span>
+          </div>
+          <div id="pageDots" class="dots"></div>
+
+          <div id="appOverlay" class="app-overlay hidden">
+            <div class="app-overlay-top">
+              <span id="overlayTitle">App</span>
+            </div>
+            <img id="overlayIcon" alt="App icon">
+            <p id="overlayMessage"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <div id="diagnosticsWindow" class="diag-window hidden" aria-hidden="true">
+    <div id="diagnosticsWindowTitlebar" class="diag-titlebar">
+      <div class="diag-lights">
+        <button id="closeDiagnosticsBtn" class="diag-light close" aria-label="Close diagnostics"></button>
+        <span class="diag-light yellow"></span>
+        <span class="diag-light green"></span>
+      </div>
+      <span class="diag-title">Asset Diagnostics</span>
+    </div>
+    <div class="diag-body">
+      <p id="assetSummary" class="muted">Load an IPSW to inspect assets.</p>
+      <pre id="missingList" class="missing-list"></pre>
+    </div>
+  </div>
+
+  <div id="settingsWindow" class="diag-window settings-window hidden" aria-hidden="true">
+    <div id="settingsWindowTitlebar" class="diag-titlebar">
+      <div class="diag-lights">
+        <button id="closeSettingsBtn" class="diag-light close" aria-label="Close settings"></button>
+        <span class="diag-light yellow"></span>
+        <span class="diag-light green"></span>
+      </div>
+      <span class="diag-title">Settings</span>
+    </div>
+    <div class="diag-body settings-body">
+      <h3>Appearance</h3>
+      <div class="theme-picker">
+        <button id="themeSystemBtn" class="theme-option" data-theme-option="system">System</button>
+        <button id="themeLightBtn" class="theme-option" data-theme-option="light">Light</button>
+        <button id="themeDarkBtn" class="theme-option" data-theme-option="dark">Dark</button>
+      </div>
+      <p class="muted">Choose how the previewer UI looks.</p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/fflate@0.8.2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+  <script type="module" src="./js/jacked.js"></script>
+</body>
+</html>
