@@ -7,7 +7,20 @@ export async function extractFilteredImages(buffer, json) {
 
     // --- 1. Unpack IPSW ---
     const ipsw = new IPSWUnpacker(buffer);
-    const firmwareMSE = await ipsw.findAndExtract('Firmware.MSE');
+    let firmwareMSE = null;
+    try {
+        firmwareMSE = await ipsw.findAndExtract('Firmware.MSE');
+    } catch (error) {
+        const message = String(error?.message || error || "");
+        if (message.toLowerCase().includes("compression type") && typeof window !== "undefined" && window.JSZip) {
+            firmwareMSE = await extractFirmwareMseWithJsZip(buffer);
+        } else {
+            throw error;
+        }
+    }
+    if (!firmwareMSE && typeof window !== "undefined" && window.JSZip) {
+        firmwareMSE = await extractFirmwareMseWithJsZip(buffer);
+    }
     if (!firmwareMSE) throw new Error('Firmware.MSE not found');
 
     // --- 2. Unpack MSE to get rsrc.img1 ---
@@ -50,4 +63,16 @@ export async function extractFilteredImages(buffer, json) {
     console.log(`🖼️ Extracted ${allImages.length} images from SilverDB`);
 
     return allImages; // Unfiltered
+}
+
+async function extractFirmwareMseWithJsZip(buffer) {
+    const zip = await window.JSZip.loadAsync(buffer);
+    let target = null;
+    zip.forEach((relativePath, file) => {
+        if (!target && !file.dir && relativePath.toUpperCase().endsWith("FIRMWARE.MSE")) {
+            target = file;
+        }
+    });
+    if (!target) return null;
+    return await target.async("arraybuffer");
 }

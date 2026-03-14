@@ -9,46 +9,68 @@
 <body data-theme="light">
   <header class="topbar">
     <div class="title-wrap">
-      <h1>iPod Nano 7 Theme Previewer</h1>
-      <p>Original n7g preview stack, upgraded with split compare and diagnostics.</p>
+      <h1 id="appTitle">iPod Nano 7 Theme Previewer</h1>
+      <p id="appSubtitle">Original n7g preview stack, upgraded with split compare and diagnostics.</p>
+      <div class="theme-names">
+        <span id="themeNamePrimary" class="theme-name primary"></span>
+        <span id="themeNameCompare" class="theme-name compare"></span>
+      </div>
     </div>
     <div class="topbar-actions">
-      <button id="toggleSidebarBtn" class="action-btn" aria-label="Toggle sidebar">Sidebar</button>
+      <button id="toggleSidebarBtn" class="action-btn" aria-label="Toggle sidebar">☰ Sidebar</button>
       <button id="openSettingsBtn" class="action-btn mac-settings-btn" aria-label="Open settings">⚙︎ Settings</button>
-      <label class="file-btn">
-        <input id="primaryFileInput" type="file" accept=".ipsw">
-        Load Theme IPSW
-      </label>
-      <label class="file-btn secondary">
-        <input id="compareFileInput" type="file" accept=".ipsw">
-        Load Compare IPSW
-      </label>
-      <button id="loadRemoteBtn" class="action-btn">Load Remote Firmware</button>
+      <button
+        id="openDocsBtn"
+        class="action-btn glyph-btn"
+        aria-label="Open documentation and credits"
+        data-tip="Documentation & Credits"
+      >ⓘ Docs</button>
+      <div class="firmware-controls-group" aria-label="Firmware loading controls">
+        <label class="file-btn">
+          <input id="primaryFileInput" type="file" accept=".ipsw">
+          <span id="loadThemeBtnText">Load Theme IPSW</span>
+        </label>
+        <label class="file-btn secondary">
+          <input id="compareFileInput" type="file" accept=".ipsw">
+          <span id="loadCompareBtnText">Load Compare IPSW</span>
+        </label>
+        <button
+          id="unloadFirmwareBtn"
+          class="action-btn glyph-btn"
+          aria-label="Unload current firmware"
+          data-tip="Unload Firmware"
+        >⏏ Unload</button>
+        <label class="file-btn secondary">
+          <input id="catalogImportInput" type="file" accept=".json,application/json">
+          <span id="importCatalogBtnText">Import ID Catalog</span>
+        </label>
+        <div class="remote-menu">
+          <button id="loadRemoteBtn" class="action-btn">Load Remote Firmware</button>
+          <div id="remotePopover" class="remote-popover" aria-label="Remote firmware source">
+            <label id="firmwareSourceLabel" class="remote-label" for="firmwareSelect">Firmware Source</label>
+            <select id="firmwareSelect"></select>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
   <main class="layout">
     <section id="settingsDock" class="dock">
       <div class="panel">
-        <h2>Firmware Source</h2>
-        <select id="firmwareSelect"></select>
-        <p id="firmwareHint" class="muted">Select and click "Load Remote Firmware".</p>
-      </div>
-
-      <div class="panel">
-        <h2>iPod Colors</h2>
+        <h2 id="ipodColorsTitle">iPod Colors</h2>
         <div id="colorChips" class="chip-grid"></div>
       </div>
 
       <div class="panel">
-        <h2>Wallpapers</h2>
+        <h2 id="wallpapersTitle">Wallpapers</h2>
         <div id="styleButtons" class="style-grid"></div>
       </div>
 
       <div class="panel">
-        <h2>Jacked Controls</h2>
+        <h2 id="jackedControlsTitle">Extra Controls</h2>
         <div class="panel-header-row">
-          <span class="muted">Rotation</span>
+          <span id="rotationLabel" class="muted">Rotation</span>
           <div class="rotate-group">
             <button id="rotateLeftBtn" class="mini-btn" aria-label="Rotate left">⟲ 90°</button>
             <button id="rotateRightBtn" class="mini-btn" aria-label="Rotate right">90° ⟳</button>
@@ -56,30 +78,31 @@
         </div>
         <label class="toggle-row">
           <input id="compareToggle" type="checkbox">
-          <span>Compare Mode</span>
+          <span id="compareModeLabel">Compare Mode</span>
         </label>
         <label class="range-row">
-          <span>Split</span>
+          <span id="splitLabel">Split</span>
           <input id="splitRange" type="range" min="5" max="95" value="50">
         </label>
         <label class="toggle-row">
           <input id="showLabelsToggle" type="checkbox" checked>
-          <span>Show Labels</span>
+          <span id="showLabelsLabel">Show Labels</span>
         </label>
         <div class="kbd-list">
-          <span><kbd>←</kbd>/<kbd>→</kbd> pages</span>
-          <span><kbd>C</kbd> compare</span>
-          <span><kbd>Esc</kbd> close app</span>
+          <span><kbd>←</kbd>/<kbd>→</kbd> <span id="shortcutPagesLabel">pages</span></span>
+          <span><kbd>C</kbd> <span id="shortcutCompareLabel">compare</span></span>
+          <span><kbd>Esc</kbd> <span id="shortcutCloseLabel">close app</span></span>
         </div>
       </div>
 
       <div class="panel diagnostics-launch">
         <div class="panel-header-row">
-          <h2>Asset Diagnostics</h2>
+          <h2 id="assetDiagnosticsTitle">Asset Diagnostics</h2>
           <button id="openDiagnosticsBtn" class="mini-btn">Open</button>
         </div>
-        <p class="muted">Open a draggable diagnostics window to inspect missing IDs.</p>
+        <p id="assetDiagnosticsDesc" class="muted">Open a draggable diagnostics window to inspect missing IDs.</p>
       </div>
+
     </section>
 
     <section class="preview-stage">
@@ -93,22 +116,20 @@
 
           <div class="statusbar">
             <span id="statusTime">12:00</span>
+            <span class="status-indicators">
+              <span id="statusBatteryIcon" class="status-indicator battery" aria-hidden="true"></span>
+            </span>
           </div>
 
           <div id="appsGrid" class="apps-grid"></div>
           <div id="appsGridCompare" class="apps-grid compare-ui-layer"></div>
-          <div class="theme-names">
-            <span id="themeNamePrimary" class="theme-name primary"></span>
-            <span id="themeNameCompare" class="theme-name compare"></span>
-          </div>
           <div id="pageDots" class="dots"></div>
 
           <div id="appOverlay" class="app-overlay hidden">
             <div class="app-overlay-top">
               <span id="overlayTitle">App</span>
             </div>
-            <img id="overlayIcon" alt="App icon">
-            <p id="overlayMessage"></p>
+            <div id="overlayContent" class="app-overlay-content"></div>
           </div>
         </div>
       </div>
@@ -116,6 +137,16 @@
   </main>
 
   <div id="toast" class="toast"></div>
+  <div id="remoteProgress" class="remote-progress hidden" aria-live="polite">
+    <div class="remote-progress-head">
+      <div class="remote-progress-title" id="remoteProgressTitle">Downloading remote firmware…</div>
+      <button id="cancelRemoteProgressBtn" class="remote-progress-cancel" aria-label="Cancel remote download">✕</button>
+    </div>
+    <div class="remote-progress-track">
+      <div id="remoteProgressFill" class="remote-progress-fill"></div>
+    </div>
+    <div class="remote-progress-meta" id="remoteProgressMeta">0%</div>
+  </div>
 
   <div id="diagnosticsWindow" class="diag-window hidden" aria-hidden="true">
     <div id="diagnosticsWindowTitlebar" class="diag-titlebar">
@@ -124,7 +155,7 @@
         <span class="diag-light yellow"></span>
         <span class="diag-light green"></span>
       </div>
-      <span class="diag-title">Asset Diagnostics</span>
+      <span id="diagnosticsWindowTitle" class="diag-title">Asset Diagnostics</span>
     </div>
     <div class="diag-body">
       <p id="assetSummary" class="muted">Load an IPSW to inspect assets.</p>
@@ -139,21 +170,59 @@
         <span class="diag-light yellow"></span>
         <span class="diag-light green"></span>
       </div>
-      <span class="diag-title">Settings</span>
+      <span id="settingsWindowTitle" class="diag-title">Settings</span>
     </div>
     <div class="diag-body settings-body">
-      <h3>Appearance</h3>
+      <h3 id="appearanceTitle">Appearance</h3>
       <div class="theme-picker">
         <button id="themeSystemBtn" class="theme-option" data-theme-option="system">System</button>
         <button id="themeLightBtn" class="theme-option" data-theme-option="light">Light</button>
         <button id="themeDarkBtn" class="theme-option" data-theme-option="dark">Dark</button>
       </div>
-      <p class="muted">Choose how the previewer UI looks.</p>
+      <p id="appearanceDesc" class="muted">Choose how the previewer UI looks.</p>
+      <h3 id="languageTitle">Language</h3>
+      <select id="languageSelect" class="settings-select">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="it">Italiano</option>
+        <option value="pt">Português</option>
+        <option value="nl">Nederlands</option>
+        <option value="ja">日本語</option>
+        <option value="zh">中文</option>
+      </select>
+      <p id="languageDesc" class="muted">Choose the app language.</p>
+    </div>
+  </div>
+
+  <div id="docsWindow" class="diag-window docs-window hidden" aria-hidden="true">
+    <div id="docsWindowTitlebar" class="diag-titlebar">
+      <div class="diag-lights">
+        <button id="closeDocsBtn" class="diag-light close" aria-label="Close documentation"></button>
+        <span class="diag-light yellow"></span>
+        <span class="diag-light green"></span>
+      </div>
+      <span id="docsWindowTitle" class="diag-title">Documentation & Credits</span>
+      <button id="toggleDocsSidebarBtn" class="diag-sidebar-toggle" aria-label="Toggle docs sidebar">☰</button>
+    </div>
+    <div class="diag-body docs-body">
+      <div class="docs-layout">
+        <aside id="docsSidebar" class="docs-sidebar" aria-label="Documentation sections"></aside>
+        <section class="docs-main">
+          <div class="docs-tabs" role="tablist" aria-label="Documentation tabs">
+            <button id="docsTabBtn" class="theme-option active" role="tab" aria-selected="true">Docs</button>
+            <button id="creditsTabBtn" class="theme-option" role="tab" aria-selected="false">Credits</button>
+          </div>
+          <div id="docsContent" class="docs-content">Loading documentation…</div>
+        </section>
+      </div>
     </div>
   </div>
 
   <script src="https://unpkg.com/fflate@0.8.2"></script>
   <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script type="module" src="./js/jacked.js"></script>
 </body>
 </html>

@@ -14,8 +14,53 @@ export class IPSWUnpacker {
      * @returns {Promise<ArrayBuffer|null>} A promise that resolves with the file's content as an ArrayBuffer, or null if not found.
      */
     findAndExtract(targetFilename) {
+        const targetUpper = String(targetFilename || "").toUpperCase();
+
+        const pickTarget = (archive) => {
+            for (const [name, data] of Object.entries(archive || {})) {
+                if (String(name).toUpperCase().endsWith(targetUpper)) {
+                    const u8 = data instanceof Uint8Array ? data : new Uint8Array(data);
+                    return u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength);
+                }
+            }
+            return null;
+        };
+
+        // Path 1: synchronous full unzip.
+        if (typeof fflate.unzipSync === "function") {
+            try {
+                const archive = fflate.unzipSync(this.buffer);
+                return Promise.resolve(pickTarget(archive));
+            } catch (_syncError) {
+                // fall through
+            }
+        }
+
+        // Path 2: asynchronous full unzip.
+        if (typeof fflate.unzip === "function") {
+            return new Promise((resolve, reject) => {
+                try {
+                    fflate.unzip(this.buffer, (err, archive) => {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        resolve(pickTarget(archive));
+                    });
+                } catch (error) {
+                    reject(error);
+                }
+            }).catch(() => {
+                // fall through to streaming fallback
+                return this.findAndExtractStream(targetUpper);
+            });
+        }
+
+        return this.findAndExtractStream(targetUpper);
+    }
+
+    findAndExtractStream(targetUpper) {
         return new Promise((resolve, reject) => {
-            const targetUpper = targetFilename.toUpperCase();
             let foundFile = false;
 
             const unzipper = new fflate.Unzip(file => {
@@ -57,6 +102,14 @@ export class IPSWUnpacker {
                     }
                 }
             };
+
+            // Register ZIP compression handlers explicitly.
+            // Method 0 = stored, method 8 = deflate (common in IPSWs).
+            if (typeof unzipper.register === "function") {
+                unzipper.register(fflate.UnzipPassThrough);
+                unzipper.register(fflate.UnzipInflate);
+                if (fflate.AsyncUnzipInflate) unzipper.register(fflate.AsyncUnzipInflate);
+            }
 
             // Start the main unzipping process
             unzipper.push(this.buffer, true);
